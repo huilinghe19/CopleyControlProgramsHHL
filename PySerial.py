@@ -77,8 +77,7 @@ class PySerial(PyTango.Device_4Impl):
 		self.baudrate = 9600
 		self.serial.baudrate = self.baudrate
         
-		#self.port = PySerial.serialScan()
-		self.port = "/dev/ttyS0"
+		self.port = PySerial.serialScan()
 		self.serial.port = self.port
 		
 		self.bytesize = 8
@@ -129,7 +128,8 @@ class PySerial(PyTango.Device_4Impl):
 	def serialScan():
 		for i in range(256):
 			try:
-				s = serial.Serial(i)
+				name = "/dev/ttyS" + str(i)
+				s = serial.Serial(name)
 				#available.append( (i, s.portstr))
 				s.close()   #explicit close 'cause of delayed GC in java
 				return s.portstr
@@ -470,7 +470,7 @@ class PySerial(PyTango.Device_4Impl):
 	def Open(self):
 		print "In ", self.get_name(), "::Open()"
 		#	Add your own code here
-		self.port = '/dev/ttyS0'
+		#self.port = '/dev/ttyS0'
 		# configure port
 		if self.configure:
 			self.serial.baudrate = self.baudrate
@@ -688,19 +688,6 @@ class PySerial(PyTango.Device_4Impl):
 			return False
 		return True
 
-#---- Aux Methods ----
-	def serialScan():
-		for i in range(256):
-			try:
-				s = serial.Serial(i)
-				#available.append( (i, s.portstr))
-				s.close()   #explicit close 'cause of delayed GC in java
-				return s.portstr
-			except serial.SerialException:
-				pass
-		return ""
-    
-	serialScan = staticmethod(serialScan)
 #==================================================================
 #
 #	PySerialClass class definition
