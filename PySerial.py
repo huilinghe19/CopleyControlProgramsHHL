@@ -660,7 +660,7 @@ class PySerial(PyTango.Device_4Impl):
 	def ReadLine(self):
 		print "In ", self.get_name(), "::ReadLine()"
 #	Add your own code here
-		### this is old code, in which eol can not be used any more. 
+		### this is old code, in which eol is not supported any more. Use unicodedata instead.
 		#argout =  []
 		#s = self.serial.readline(eol=self.terminatorchar)
 		#print s
