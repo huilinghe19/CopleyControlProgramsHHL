@@ -41,7 +41,8 @@ import PyTango
 import sys
 import serial
 import array
-
+import io
+import unicodedata
 #==================================================================
 #   PySerial Class Description:
 #
@@ -72,11 +73,12 @@ class PySerial(PyTango.Device_4Impl):
 
 		self.configure = True
 		self.serial = serial.Serial()
-				
+
 		self.baudrate = 9600
 		self.serial.baudrate = self.baudrate
-		
-		self.port = PySerial.serialScan()
+        
+		#self.port = PySerial.serialScan()
+		self.port = "/dev/ttyS0"
 		self.serial.port = self.port
 		
 		self.bytesize = 8
@@ -468,7 +470,7 @@ class PySerial(PyTango.Device_4Impl):
 	def Open(self):
 		print "In ", self.get_name(), "::Open()"
 		#	Add your own code here
-		#self.port = '/dev/ttyS0'
+		self.port = '/dev/ttyS0'
 		# configure port
 		if self.configure:
 			self.serial.baudrate = self.baudrate
@@ -603,7 +605,7 @@ class PySerial(PyTango.Device_4Impl):
 		#value = s + self.terminatorchar
 		#print "string " ,value
 		#self.serial.write(value)
- 
+
 		print "string " , argin
 		self.serial.write(argin+ '\n')
 
@@ -614,6 +616,8 @@ class PySerial(PyTango.Device_4Impl):
 			#	End of Generated Code
 			#	Re-Start of Generated Code
 			return False
+            
+       
 		return True
 
 
@@ -651,18 +655,27 @@ class PySerial(PyTango.Device_4Impl):
 #	ReadLine command:
 #
 #	Description: 
-#	argout: DevVarCharArray	Characters readed
+#	argout: DevVarCharArray Characters readed
 #------------------------------------------------------------------
 	def ReadLine(self):
 		print "In ", self.get_name(), "::ReadLine()"
-		#	Add your own code here
-		argout =  []
-		s = self.serial.readline(eol=self.terminatorchar)
-		print s
-		b = array.array('B', s)
+#	Add your own code here
+		### this is old code, in which eol can not be used any more. 
+		#argout =  []
+		#s = self.serial.readline(eol=self.terminatorchar)
+		#print s
+		#b = array.array('B', s)
+		#argout = b.tolist()
+		#return argout
+		### old code to end
+        
+		sio = io.TextIOWrapper(io.BufferedRWPair(self.serial, self.serial))
+		sio.flush() # it is buffering. required to get the data out *now*
+		s = sio.readline()
+		argoutstring = unicodedata.normalize('NFKD', s).encode('ascii','ignore')      
+		b = array.array('B', argoutstring)
 		argout = b.tolist()
 		return argout
-    
 
 
 #---- ReadLine command State Machine -----------------
@@ -670,6 +683,7 @@ class PySerial(PyTango.Device_4Impl):
 		if self.get_state() in [PyTango.DevState.FAULT,
 		                        PyTango.DevState.OFF]:
 			#	End of Generated Code
+			#self.Open()
 			#	Re-Start of Generated Code
 			return False
 		return True

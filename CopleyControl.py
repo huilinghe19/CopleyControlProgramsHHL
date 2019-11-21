@@ -110,6 +110,8 @@ class CopleyControl (PyTango.Device_4Impl):
         self.attr_ConversionSoftwareLimit_read = 10000.0     
         self.dev_serial = self.connectSerial()         
         self.NodeID = self.getNodeID()
+        self.DesiredState = 31
+        self.TrajectoryProfileMode = 256
         #self.MaxVelocity = 7000
         #self.MaxVelocity = self.getMaxVelocity()
         
@@ -181,12 +183,12 @@ class CopleyControl (PyTango.Device_4Impl):
         #----- PROTECTED REGION ID(CopleyControl.Position_write) ENABLED START -----#
         expected_position = int(data)
         self.attr_SetPoint_read = expected_position - int(self.attr_Position_read)
-        if int(self.attr_SoftwareCcwLimit_read) == int(self.attr_SoftwareCcwLimit_read) == 0:
+        if int(self.attr_SoftwareCcwLimit_read) == 0 and int(self.attr_SoftwareCcwLimit_read) == 0:
             print "Software Limits are not set."
-            command = self.setParameterCommand("0xca", str(int(self.attr_SetPoint_read)))
+            command = self.setParameterCommand("0xca", str(int(expected_position - int(self.attr_Position_read))))
             self.Write(command)
         elif expected_position in range(int(self.attr_SoftwareCcwLimit_read), int(self.attr_SoftwareCwLimit_read)):
-            command = self.setParameterCommand("0xca", str(int(self.attr_SetPoint_read)))
+            command = self.setParameterCommand("0xca", str(int(expected_position - int(self.attr_Position_read))))
             self.Write(command)
         else:
             print "The input is out of the valid range, check the software limits. "
@@ -196,10 +198,10 @@ class CopleyControl (PyTango.Device_4Impl):
         self.debug_stream("In read_SetPoint()")
         #----- PROTECTED REGION ID(CopleyControl.SetPoint_read) ENABLED START -----#
         attr.set_value(int(self.attr_SetPoint_read)) 
-        command = self.getParameterCommand("0xca")
-        self.attr_SetPoint_read =  self.getValue(command)
-        if self.attr_SetPoint_read != '':
-            attr.set_value(int(self.attr_SetPoint_read))    
+        #command = self.getParameterCommand("0xca")
+        #self.attr_SetPoint_read =  self.getValue(command)
+        #if self.attr_SetPoint_read != '':
+            #attr.set_value(int(self.attr_SetPoint_read))    
       
         #----- PROTECTED REGION END -----#	//	CopleyControl.SetPoint_read
         
@@ -567,7 +569,8 @@ class CopleyControl (PyTango.Device_4Impl):
         raw_result = ""
         print "In ", self.get_name(), "::WriteRead()", str(argin)    
         dev = self.dev_serial       
-        dev.FlushInput()
+        dev.Close()
+        dev.Open()
         dev.Write(argin)
         start_time = time.clock()
         time.sleep(0.1)
@@ -726,10 +729,10 @@ class CopleyControl (PyTango.Device_4Impl):
             if expected_position >= int(self.attr_SoftwareCcwLimit_read) and expected_position <= int(self.attr_SoftwareCwLimit_read):
                 print  "expected_position ", expected_position, " is among the range from ", int(self.attr_SoftwareCcwLimit_read), " to ", int(self.attr_SoftwareCwLimit_read)
                 
-                self.setMoveParameters(31, 256, self.attr_SetPoint_read, self.MaxVelocity,  self.attr_Acceleration_read, self.attr_Deceleration_read)
+                self.setMoveParameters()
                 command_move = str(self.NodeID) +" t 1"
                 self.getValue(str(command_move))
-                
+                self.attr_SetPoint_read = 0
             else:
                  print  "expected_position ", expected_position, " is not among the range from ", int(self.attr_SoftwareCcwLimit_read), " to ", int(self.attr_SoftwareCwLimit_read)
         else:
@@ -747,8 +750,10 @@ class CopleyControl (PyTango.Device_4Impl):
         #----- PROTECTED REGION ID(CopleyControl.Write) ENABLED START -----#
         raw_result = ""
         print "In ", self.get_name(), "::WriteRead()", str(argin) 
-        dev = self.dev_serial       
-        dev.FlushInput()
+        dev = self.dev_serial    
+        dev.Close()
+        dev.Open()
+
         dev.Write(argin)
         time.sleep(0.1)
         while True:                      
@@ -892,7 +897,7 @@ class CopleyControl (PyTango.Device_4Impl):
         Set the Homing parameters using the input Homing method value
         """
         HomeOffset = self.attr_HomeOffset_read 
-        command_desiredState = self.setParameterCommand("0x24", 31)  
+        command_DesiredState = self.setParameterCommand("0x24", 31)  
         command_homingMethod = self.setParameterCommand("0xc2", 516)  
         command_FastVelocity = self.setParameterCommand("0xc3", 16667)  
         command_SlowVelocity = self.setParameterCommand("0xc4", 3333)        
@@ -905,23 +910,22 @@ class CopleyControl (PyTango.Device_4Impl):
         #command_Position = self.setParameterCommand("0xca", 0)
         command_homing = str(self.NodeID) + " t 2 "
         
-        command = str(command_desiredState) + str(command_homingMethod) + str(command_FastVelocity)+ str(command_SlowVelocity) + str(command_Acceleration) + str(command_homeOffset) + str(command_CurrentLimit) + str(command_TrajectoryProfileMode)+ str(command_PositiveSoftwareLimit) +  str(command_NegativeSoftwareLimit) + str(command_homing)
+        command = str(command_DesiredState) + str(command_homingMethod) + str(command_FastVelocity)+ str(command_SlowVelocity) + str(command_Acceleration) + str(command_homeOffset) + str(command_CurrentLimit) + str(command_TrajectoryProfileMode)+ str(command_PositiveSoftwareLimit) +  str(command_NegativeSoftwareLimit) + str(command_homing)
         print command
         return command_homing
     
-    def setMoveParameters(self, desired_state, trajectory_profile_mode, position_desired, velocity_desired, acceleration_desired, deceleration_desired):
+    def setMoveParameters(self):
         """ 
         Sets Programmed Position Mode, Trajectory Profile Mode, position, velocity, acceleration, deceleration.       
         """
         print "In ", self.get_name(), "::setMoveParameters()"
        
-        command_state = self.setParameterCommand( "0x24", int(desired_state))
-        command_profile = self.setParameterCommand( "0xc8", int(trajectory_profile_mode))
-        command_pos = self.setParameterCommand( "0xca", int(position_desired))
-        command_vel = self.setParameterCommand( "0xcb", int(velocity_desired))
-        command_acc = self.setParameterCommand( "0xcc", int(acceleration_desired))
-        command_dec = self.setParameterCommand( "0xcd", int(deceleration_desired))
-
+        command_state = self.setParameterCommand( "0x24", int(self.DesiredState))
+        command_profile = self.setParameterCommand( "0xc8", int(self.TrajectoryProfileMode))
+        command_pos = self.setParameterCommand( "0xca", int(self.attr_SetPoint_read))
+        command_vel = self.setParameterCommand( "0xcb", int(self.attr_Velocity_read))
+        command_acc = self.setParameterCommand( "0xcc", int(self.attr_Acceleration_read))
+        command_dec = self.setParameterCommand( "0xcd", int(self.attr_Deceleration_read))
         command = command_state + command_profile + command_vel + command_acc + command_dec + command_pos
         print command
         self.Write(command)
