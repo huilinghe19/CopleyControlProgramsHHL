@@ -96,7 +96,6 @@ class CopleyControl (PyTango.Device_4Impl):
         self.attr_CwLimit_read = False
         self.attr_CcwLimit_read = False
         self.attr_RealMaxVelocity_read = 0.0
-        self.attr_Base_rate_read = 0.0
         #----- PROTECTED REGION ID(CopleyControl.init_device) ENABLED START -----#
         self.attr_Acceleration_read = 66800.0
         self.attr_Deceleration_read = 66800.0
@@ -185,9 +184,9 @@ class CopleyControl (PyTango.Device_4Impl):
         if int(self.attr_SoftwareCcwLimit_read) == 0 and int(self.attr_SoftwareCcwLimit_read) == 0:
             print "Software Limits are not set."
             command = self.setParameterCommand("0xca", str(int(expected_position - int(self.attr_Position_read))))
-            self.Write(command)
+            self.write(command)
         elif expected_position in range(int(self.attr_SoftwareCcwLimit_read), int(self.attr_SoftwareCwLimit_read)):
-            command = self.setParameterCommand("0xca", str(int(expected_position - int(self.attr_Position_read))))
+            command = self.setParameterCommand("0xca", str(int(self.attr_SetPoint_read)))
             self.write(command)
         else:
             print "The input is out of the valid range, check the software limits. "
@@ -428,19 +427,6 @@ class CopleyControl (PyTango.Device_4Impl):
         command = self.setParameterCommand("0xcb ", str(int(self.attr_Velocity_read)))
         self.write(command)
         #----- PROTECTED REGION END -----#	//	CopleyControl.RealMaxVelocity_write
-        
-    def read_Base_rate(self, attr):
-        self.debug_stream("In read_Base_rate()")
-        #----- PROTECTED REGION ID(CopleyControl.Base_rate_read) ENABLED START -----#
-        attr.set_value(self.attr_Base_rate_read)
-        #----- PROTECTED REGION END -----#	//	CopleyControl.Base_rate_read
-        
-    def write_Base_rate(self, attr):
-        self.debug_stream("In write_Base_rate()")
-        data = attr.get_write_value()
-        #----- PROTECTED REGION ID(CopleyControl.Base_rate_write) ENABLED START -----#
-        
-        #----- PROTECTED REGION END -----#	//	CopleyControl.Base_rate_write
         
     
     
@@ -705,19 +691,23 @@ class CopleyControl (PyTango.Device_4Impl):
         self.debug_stream("In Move()")
         #----- PROTECTED REGION ID(CopleyControl.Move) ENABLED START -----#
         status = str(self.dev_status())
-        current_position = self.getValue(str(self.NodeID) + " g r0x2d")
-        expected_position = int(current_position) + int(self.attr_SetPoint_read)
-        if status == "Status is STANDBY" or status == "Positive limit switch Active" or status == "Negative limit switch Active":
-            if expected_position >= int(self.attr_SoftwareCcwLimit_read) and expected_position <= int(self.attr_SoftwareCwLimit_read):
-                print  "expected_position ", expected_position, " is among the range from ", int(self.attr_SoftwareCcwLimit_read), " to ", int(self.attr_SoftwareCwLimit_read)
-                self.setMoveParameters()
-                command_move = str(self.NodeID) +" t 1"
-                self.getValue(str(command_move))
-                self.attr_SetPoint_read = 0
-            else:
-                 print  "expected_position ", expected_position, " is not among the range from ", int(self.attr_SoftwareCcwLimit_read), " to ", int(self.attr_SoftwareCwLimit_read)
+        if self.attr_SetPoint_read == 0:
+            print "The expected position is achieved."
+            pass
         else:
-            print("Check Device State please.")
+            current_position = self.getValue(str(self.NodeID) + " g r0x2d") 
+            expected_position = int(current_position) + int(self.attr_SetPoint_read)
+            if status == "Status is STANDBY" or status == "Positive limit switch Active" or status == "Negative limit switch Active":
+                if expected_position >= int(self.attr_SoftwareCcwLimit_read) and expected_position <= int(self.attr_SoftwareCwLimit_read):
+                    print  "expected position ", expected_position, " is among the range from ", int(self.attr_SoftwareCcwLimit_read), " to ", int(self.attr_SoftwareCwLimit_read)
+                    self.setMoveParameters()
+                    command_move = str(self.NodeID) +" t 1"
+                    self.getValue(str(command_move))
+                    self.attr_SetPoint_read = 0
+                else:
+                     print  "expected position ", expected_position, " is not among the range from ", int(self.attr_SoftwareCcwLimit_read), " to ", int(self.attr_SoftwareCwLimit_read)
+            else:
+                print("Check Device State please.")
         #----- PROTECTED REGION END -----#	//	CopleyControl.Move
         
 
@@ -1106,10 +1096,6 @@ class CopleyControlClass(PyTango.DeviceClass):
             {
                 'Memorized':"true"
             } ],
-        'Base_rate':
-            [[PyTango.DevDouble,
-            PyTango.SCALAR,
-            PyTango.READ_WRITE]],
         }
 
 
