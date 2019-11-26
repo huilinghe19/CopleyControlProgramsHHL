@@ -121,9 +121,9 @@ class CopleyControl (PyTango.Device_4Impl):
         command = self.getParameterCommand("0xcc")
         self.attr_Acceleration_read =  self.getValue(command)
         if self.attr_Acceleration_read != '':
-            print "Read Acceleration: ", self.attr_Acceleration_read
+            print "Read Amplifier Acceleration: ", self.attr_Acceleration_read
             realAcceleration = int(self.attr_Acceleration_read)/400
-            print "Read realAcceleration: ", realAcceleration
+            print "Read Motor realAcceleration: ", realAcceleration
             attr.set_value(int(self.attr_Acceleration_read))
         #----- PROTECTED REGION END -----#	//	CopleyControl.Acceleration_read
         
@@ -138,6 +138,8 @@ class CopleyControl (PyTango.Device_4Impl):
         self.attr_Acceleration_read = int(data)
         command = self.setParameterCommand("0xcc", str(int(self.attr_Acceleration_read)))
         self.write(command)
+        acc = 10*int(data)
+        print "Set acceleration to ", str(acc), "counts/second ."
         #----- PROTECTED REGION END -----#	//	CopleyControl.Acceleration_write
         
     def read_Deceleration(self, attr):
@@ -148,9 +150,9 @@ class CopleyControl (PyTango.Device_4Impl):
         command = self.getParameterCommand("0xcd")
         self.attr_Deceleration_read =  self.getValue(command)
         if self.attr_Deceleration_read != '':
-            print "Read Deceleration: ", self.attr_Deceleration_read
+            print "Read Amplifier Deceleration: ", self.attr_Deceleration_read
             realDeceleration = int(self.attr_Deceleration_read)/400
-            print "Read realDeceleration: ", realDeceleration
+            print "Read Motor realDeceleration: ", realDeceleration
             #attr.set_value(int(realDeceleration))  
             attr.set_value(int(self.attr_Deceleration_read))  
         #----- PROTECTED REGION END -----#	//	CopleyControl.Deceleration_read
@@ -174,6 +176,7 @@ class CopleyControl (PyTango.Device_4Impl):
         command = self.getParameterCommand("0x2d")
         self.attr_Position_read =  self.getValue(command)
         if self.attr_Position_read != '':
+            
             attr.set_value(int(self.attr_Position_read))        
         #----- PROTECTED REGION END -----#	//	CopleyControl.Position_read
         
@@ -236,8 +239,8 @@ class CopleyControl (PyTango.Device_4Impl):
         ustepsRev = 4000
         conversionVelocity = 60 * unit/ustepsRev 
         realVelocity = int((int(self.attr_Velocity_read) *conversionVelocity)) 
-        print "Velocity is ", self.attr_Velocity_read
-        print "realVelocity is ", realVelocity
+        print "Read Amplifier Velocity: ", self.attr_Velocity_read
+        print "Read Motor realVelocity: ", realVelocity
         if self.attr_Velocity_read != '':
             attr.set_value(int(self.attr_Velocity_read))
         #----- PROTECTED REGION END -----#	//	CopleyControl.Velocity_read
@@ -269,12 +272,16 @@ class CopleyControl (PyTango.Device_4Impl):
         data = attr.get_write_value()
         #----- PROTECTED REGION ID(CopleyControl.DialPosition_write) ENABLED START -----#
         print "In ", self.get_name(), "::write_DialPosition()"
-        attr.set_value(data)
+        
         expected_position = float(self.attr_Conversion_read) * data
+        
         data_new = (data - self.attr_DialPosition_read) * float(self.attr_Conversion_read) 
+        print data_new
+        self.attr_SetPoint_read = (data - self.attr_DialPosition_read) * float(self.attr_Conversion_read) 
         if expected_position in range(int(self.attr_SoftwareCcwLimit_read), int(self.attr_SoftwareCwLimit_read)):
             command = self.setParameterCommand("0xca", str(int(data_new)))
             self.write(command)
+            
         else:
             print("DialPosition is out of range.")
         #----- PROTECTED REGION END -----#	//	CopleyControl.DialPosition_write
@@ -555,7 +562,6 @@ class CopleyControl (PyTango.Device_4Impl):
         while (time.clock() - start_time) < 1:
             raw_result = dev.ReadLine()   
             if len(raw_result) > 0:
-                #print "Raw Result:", raw_result
                 pass
             else: 
                 print "No power"
@@ -564,16 +570,10 @@ class CopleyControl (PyTango.Device_4Impl):
        
         while (raw_result[-1] == '\r' or raw_result[-1] == '\n'):
             raw_result = raw_result[0:-1] 
-            #print "raw_result 2", raw_result
-        #print "Result Type:", type(raw_result)
         b = numpy.ndarray.tolist(raw_result)
-        #print "Result:", b
         for i in b:
             c = chr(i)
-            #print c
             argout = argout + c 
-        #print "the real answer:", argout
-      
         #----- PROTECTED REGION END -----#	//	CopleyControl.WriteRead
         return argout
         
@@ -696,23 +696,27 @@ class CopleyControl (PyTango.Device_4Impl):
         self.debug_stream("In Move()")
         #----- PROTECTED REGION ID(CopleyControl.Move) ENABLED START -----#
         status = str(self.dev_status())
-        if self.attr_SetPoint_read == 0:
-            print "The expected position is achieved."
+        if self.attr_SoftwareCwLimit_read == 0.0 and self.attr_SoftwareCwLimit_read == 0.0:
+            print "NO software limits are set. please set the software limits: SoftwareCwLimit, SoftwareCcwLimit." 
             pass
         else:
-            current_position = self.getValue(str(self.NodeId) + " g r0x2d") 
-            expected_position = int(current_position) + int(self.attr_SetPoint_read)
-            if status == "Status is STANDBY" or status == "Positive limit switch Active" or status == "Negative limit switch Active":
-                if expected_position >= int(self.attr_SoftwareCcwLimit_read) and expected_position <= int(self.attr_SoftwareCwLimit_read):
-                    print  "expected position ", expected_position, " is among the range from ", int(self.attr_SoftwareCcwLimit_read), " to ", int(self.attr_SoftwareCwLimit_read)
-                    self.setMoveParameters()
-                    command_move = str(self.NodeId) +" t 1"
-                    self.getValue(str(command_move))
-                    self.attr_SetPoint_read = 0
-                else:
-                     print  "expected position ", expected_position, " is not among the range from ", int(self.attr_SoftwareCcwLimit_read), " to ", int(self.attr_SoftwareCwLimit_read)
+            if self.attr_SetPoint_read == 0:
+                print "The expected position is achieved."
+                pass
             else:
-                print("Check Device State please.")
+                current_position = self.getValue(str(self.NodeId) + " g r0x2d") 
+                expected_position = int(current_position) + int(self.attr_SetPoint_read)
+                if status == "Status is STANDBY" or status == "Positive limit switch Active" or status == "Negative limit switch Active":
+                    if expected_position >= int(self.attr_SoftwareCcwLimit_read) and expected_position <= int(self.attr_SoftwareCwLimit_read):
+                        print  "expected position ", expected_position, " is among the range from ", int(self.attr_SoftwareCcwLimit_read), " to ", int(self.attr_SoftwareCwLimit_read)
+                        self.setMoveParameters()
+                        command_move = str(self.NodeId) +" t 1"
+                        self.getValue(str(command_move))
+                        self.attr_SetPoint_read = 0
+                    else:
+                        print  "expected position ", expected_position, " is not among the range from ", int(self.attr_SoftwareCcwLimit_read), " to ", int(self.attr_SoftwareCwLimit_read)
+                else:
+                    print("Check Device State please.")
         #----- PROTECTED REGION END -----#	//	CopleyControl.Move
         
 
@@ -951,7 +955,7 @@ class CopleyControl (PyTango.Device_4Impl):
         if answer1 == answer2 == answer3 == answer4 == answer5 and answer1 == "ok\n":
             print "In ", self.get_name(), "::setInitParameters() OK"
         else: 
-            print str(answer)
+           
             print "In ", self.get_name(), "::setInitParameters() ERROR"
               
        
