@@ -1,0 +1,3 @@
+p "Initialisierungsdatei für SPEC"
+qdo "/home/specadm/macros/spec_utils.mac"
+qdo "/home/specadm/macros/copley.mac"
