@@ -123,9 +123,12 @@ class CopleyControl (PyTango.Device_4Impl):
         command = self.getParameterCommand("0xcc")
         self.attr_Acceleration_read =  self.getValue(command)
         if self.attr_Acceleration_read != '':
-            print("Read amplifier maximum acceleration: ", self.attr_Acceleration_read, "counts/(second*second)")
-            realAcceleration = int(self.attr_Acceleration_read)/400
-            print("Read motor real acceleration: ", realAcceleration, "counts/(second*second)")
+            unit = 10
+            acc = int(self.attr_Acceleration_read)* unit
+            print("Read maximum acceleration: ", str(acc), "counts/(second*second)")
+            conversion = 0.0025
+            realAcceleration = int(self.attr_Acceleration_read)*conversion
+            print("Read motor real maximum acceleration: ", realAcceleration, "counts/(second*second)")
             attr.set_value(int(self.attr_Acceleration_read))
         #----- PROTECTED REGION END -----#	//	CopleyControl.Acceleration_read
         
@@ -140,7 +143,8 @@ class CopleyControl (PyTango.Device_4Impl):
         self.attr_Acceleration_read = int(data)
         command = self.setParameterCommand("0xcc", str(int(self.attr_Acceleration_read)))
         self.write(command)
-        acc = 10*int(data)
+        unit = 10
+        acc = int(data)* unit
         print("Set maximum acceleration to  ", str(acc), "counts/(second*second).")
         #----- PROTECTED REGION END -----#	//	CopleyControl.Acceleration_write
         
@@ -152,9 +156,12 @@ class CopleyControl (PyTango.Device_4Impl):
         command = self.getParameterCommand("0xcd")
         self.attr_Deceleration_read =  self.getValue(command)
         if self.attr_Deceleration_read != '':
-            print("Read amplifier maximum deceleration: ", self.attr_Deceleration_read,  "counts/(second*second)")
-            realDeceleration = int(self.attr_Deceleration_read)/400
-            print("Read motor real deceleration: ", realDeceleration, "counts/(second*second)")
+            unit = 10 
+            dec = int(self.attr_Deceleration_read) * unit
+            print("Read maximum deceleration: ", str(dec),  "counts/(second*second)")
+            conversion = 0.0025
+            realDeceleration = int(self.attr_Deceleration_read)*conversion
+            print("Read motor real maximum deceleration: ", realDeceleration, "counts/(second*second)")
             #attr.set_value(int(realDeceleration))  
             attr.set_value(int(self.attr_Deceleration_read))  
         #----- PROTECTED REGION END -----#	//	CopleyControl.Deceleration_read
@@ -169,7 +176,8 @@ class CopleyControl (PyTango.Device_4Impl):
         self.attr_Deceleration_read = int(data)
         command = self.setParameterCommand("0xcd", str(int(self.attr_Deceleration_read)))
         self.write(command)
-        dec = 10*int(data)
+        unit = 10 
+        dec = int(data)* unit
         print("Set maximum deceleration to  ", str(dec), "counts/(second*second).")
         #----- PROTECTED REGION END -----#	//	CopleyControl.Deceleration_write
         
@@ -236,11 +244,12 @@ class CopleyControl (PyTango.Device_4Impl):
         command = self.getParameterCommand("0xcb")
         self.attr_Velocity_read =  self.getValue(command)
         unit = 0.1
+        vel = int(self.attr_Velocity_read)*unit
         ustepsRev = 4000
         conversionVelocity = 60 * unit/ustepsRev 
         realVelocity = int((int(self.attr_Velocity_read) *conversionVelocity)) 
-        print("Read amplifier maximum velocity: ", self.attr_Velocity_read,"counts/second.")
-        print("Read motor real velocity: ", realVelocity,"counts/second.")
+        print("Read maximum velocity: ", vel ,"counts/second.")
+        print("Read motor real maximum velocity: ", realVelocity,"counts/second.")
         if self.attr_Velocity_read != '':
             attr.set_value(int(self.attr_Velocity_read))
         #----- PROTECTED REGION END -----#	//	CopleyControl.Velocity_read
@@ -254,7 +263,9 @@ class CopleyControl (PyTango.Device_4Impl):
         attr.set_value(self.attr_Velocity_read)
         command = self.setParameterCommand("0xcb ", str(int(data)))
         self.write(command)
-        print("Set maximum velocityto  ", str(data), "counts/second.")
+        unit = 0.1
+        vel = int(data)*unit
+        print("Set maximum velocity to  ", str(vel), "counts/second.")
         #----- PROTECTED REGION END -----#	//	CopleyControl.Velocity_write
         
     def read_DialPosition(self, attr):
