@@ -25,8 +25,10 @@ class CopleyEpicsController(MotorController):
         print motorState
         if motorState == 0:
             state = self.STATES["ON"]
-        else:
+        elif motorState == 134217728:
             state = self.STATES["MOVING"]
+        else: 
+            state = self.STATES["FAULT"]
         limit_switches = MotorController.NoLimitSwitch
         return state, limit_switches
 
