@@ -1,102 +1,72 @@
-from epics import PV
-
+from epics import *
 from sardana import State, SardanaValue
 from sardana.pool.controller import MotorController
 from sardana.pool.controller import DefaultValue, Description, FGet, FSet, Type
 
-
           
 class CopleyEpicsController(MotorController):
 
-    ctrl_properties = \
-        {
-        
-          "Device": {Type : str,
-                  Description : "connected device server",
-                   DefaultValue : ["motor1","motor2"]},
-                  
-       
-        }
-    AXIS_NAMES = {1: "pos"}
-    ANS = 1
-    STATES = {"ON": State.On, "MOVING": State.Moving}
+    STATES = {"ON": State.On, "MOVING": State.Moving, "FALUT": State.Fault}
 
     def __init__(self, inst, props, *args, **kwargs):
         MotorController.__init__(self,inst, props, *args, **kwargs)
         #super_class = super(CopleyController, self)
         #super_class.__init__(inst, props, *args, **kwargs)
-	device = self.Device
         #self.copleyController = TangoDSObject(device)
-     
-    #ef __del__(self):
-        #el self.copleyController
+    #def __del__(self):
+        #del self.copleyController
 
     def StateOne(self, axis):
         """
-        Read the axis state. asix can be 1, 2, 3, 4. One axis is defined as one motor in spock. 
+        Read the axis state. One axis is defined as one motor in spock. 
       
         """
-        ans = self.ANS
-	if ans == 1:
+        motorState = int(caget("state"))
+        print motorState
+        if motorState == 0:
             state = self.STATES["ON"]
         else:
-	    state = self.STATES["MOVING"]
-         
-       
-        return state
+            state = self.STATES["MOVING"]
+        limit_switches = MotorController.NoLimitSwitch
+        return state, limit_switches
 
     def ReadOne(self, axis):
         """
-        Read the position of the axis(motor). When "wa" or "wm motor_name"is called in spock, 
-        this method is used. 
+        Read the position of the axis(motor). When "wa" or "wm motor_name"is called in spock, this method is used. 
         """
-       
-       
-        
-        pos = PV('pos')
-        ans = pos.get()
+        ans = caget('pos')
         return float(ans)
+    
     #def DefinePosition(self, axis, position):
-        #axis_name = self.AXIS_NAMES[axis]
-      
-        #copleyController = TangoDSObject(axis_name)
-     
-        #copleyController.setPosition(position)
-        
+        #caput('target', position)
+
     def StartOne(self, axis, position):
         """
         Move the axis(motor) to the given position. 
-        """
-        
+        """ 
        
-        target= PV('target')
-        start = PV('start')
-        target.put(float(int(position)))
-        start.put(1)
-            
-       
-      
-    def GetAxisPar(self, axis, name):
-        velocity= PV('vel')
-                   
-                 
-        if name == "velocity":
-            ans = float(int(vel.get()))   
-                         
-      
-        return ans
-    
-    def SetAxisPar(self, axis, name, value):
-        velocity= PV('vel')
-                    
-        if name == "velocity":
-            vel.put(float(int(value)))
-   
+        caput("move", position)
    
     def AbortOne(self, axis):
         """
         Abort the axis(motor).
         """
-       
-        stop = PV('stop')
-        stop.put('1')
+        caput('stop', 1)
+        
+    def GetAxisPar(self, axis, name):
+        if name == "velocity":
+            ans = float(caget("vel"))  
+            
+        #elif name == "acceleration":    
+        #elif name == "deceleration":
+        
+        return ans
+    
+    def SetAxisPar(self, axis, name, value):
+        if name == "velocity":
+            caput("vel", value) 
+        #elif name == "acceleration":
+        #elif name == "deceleration":
+        
+
+        
