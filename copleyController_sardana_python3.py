@@ -16,7 +16,7 @@ class TangoDSObject(object):
         """
         try:
             dev = PyTango.DeviceProxy(device_name)  
-            #print "Device Status:", dev.Status()
+            #print("Device Status:", dev.Status())
             return dev
         except:
             print("ERROR: An exception with connecting DS {} occurred. ".format(device))  
@@ -26,7 +26,6 @@ class TangoDSObject(object):
         """
         get the node id string from db
         """
-     
         db = PyTango.Database()
         dict_nodeID = db.get_device_property(str(self.name),"NodeId")
         return str(dict_nodeID["NodeId"][0])
@@ -35,11 +34,9 @@ class TangoDSObject(object):
         """
         set variable
         """
-        
         ser=self.ser
         nodeID = self.getNodeID(axis) 
         setCommandFormat = "{} s r{} {}\n".format(str(nodeID), str(variable_ID), str(int(value)))
-        #print  setCommandFormat
         return ser.WriteRead(setCommandFormat)
     
     def getVariable(self, axis, variable_ID):
@@ -50,64 +47,65 @@ class TangoDSObject(object):
         ser = self.ser
         nodeID = self.getNodeID(axis) 
         getCommandFormat = "{} g r{}\n".format(str(nodeID), str(variable_ID))
-        #print getCommandFormat
         return ser.WriteRead("{} g r{}\n".format(str(nodeID), str(variable_ID)))
     
     def getStatus(self):
+        """
+        get status
+        :return:
+        """
         ser = self.ser
         ans = ser.Status()
-        #print ans
-	#if getCwLimit() and getCcwLimit():
-	    #ans =  "Positive Limit Switch and Negative Limit Switch Active"
-	#elif getCwLimit():
-	    #ans = "Positive Limit Switch Active"
-	#elif getCcwLimit():
-	    #ans = "Negative Limit Switch Active"
+        #print(ans)
         return ans
     
     def getPosition(self):
         ser = self.ser
         ans = ser.position 
-        return float(int(ans))       
+        return float(int(ans))
+
     def getVelocity(self):
         ser = self.ser        
         ans = ser.velocity
         return float(int(ans))
+
     def getAcceleration(self):
         ser = self.ser
         ans = ser.acceleration
         return float(int(ans))
+
     def getDeceleration(self):
         ser = self.ser
         ans = ser.deceleration
         return float(int(ans))
+
     def getStepPerUnit(self):
         ans = 1
         return float(ans)
     #def getCwLimit(self):
-	#ser = self.ser
-	#return float(int(ser.CwLimit))
+	    #ser = self.ser
+	    #return float(int(ser.CwLimit))
     def getCcwLimit(self):
         ser = self.ser
-        return float(int(ser.CcwLimit))      
+        return float(int(ser.CcwLimit))
+
     def setVelocity(self, value):
-        
         ser = self.ser
-        ser.velocity = int(value) 
-        
+        ser.velocity = int(value)
+
     def setAcceleration(self, value):
-      
         ser = self.ser
         ser.acceleration = int(value)
+
     def setDeceleration(self, value):
         ser = self.ser
         ser.deceleration = int(value)
+
     def setStepPerUnit(self):
         raise Exception("step_per_unit is always 1")
+
     def setPosition(self, value):
-        
         ser = self.ser
-       
         ser.SetPoint = int(value) - int(self.getPosition())
         ser.Position = int(value)
         
@@ -115,7 +113,6 @@ class TangoDSObject(object):
         """
         move the axis.
         """
-        
         ser=self.ser
         nodeID = self.getNodeID(axis) 
         result = ser.WriteRead("{} t 1\n".format(str(nodeID)))   
@@ -125,7 +122,6 @@ class TangoDSObject(object):
         """
         abort the axis.
         """
-        
         ser=self.ser
         nodeID = self.getNodeID(axis) 
         ser.WriteRead("{} t 0\n".format(str(nodeID)))   
@@ -167,7 +163,6 @@ class CopleyController(MotorController):
             ans = copleyController.getStatus()
             if ans == "Negative limit switch Active":
                 state = self.STATES["ALARM"]
-
                 limit_switches |= MotorController.LowerLimitSwitch
             elif ans == "Positive limit switch Active":
                 state = self.STATES["ALARM"]
@@ -181,7 +176,7 @@ class CopleyController(MotorController):
         except:
             #state = self.STATES["FAULT"]
             pass
-    #print "StateOne() finished"
+        #print("StateOne() finished")
         return state,  limit_switches
 
     def ReadOne(self, axis):
@@ -189,55 +184,49 @@ class CopleyController(MotorController):
         Read the position of the axis(motor). When "wa" or "wm motor_name"is called in spock, 
         this method is used. 
         """
-	#print "ReadOne() start"
+
         axis_name = self.AXIS_NAMES[axis]
-       
         copleyController = TangoDSObject(axis_name)
-    
         ans = copleyController.getPosition()
- 	#print  "read position: ", ans
-	#print "ReadOne() finished"
         return float(ans)
     def DefinePosition(self, axis, position):
         axis_name = self.AXIS_NAMES[axis]
-      
         copleyController = TangoDSObject(axis_name)
-     
         copleyController.setPosition(position)
         
     def StartOne(self, axis, position):
         """
         Move the axis(motor) to the given position. 
         """
-	#print "StartOne() start"
+        #print("StartOne() start")
         axis_name = self.AXIS_NAMES[axis]
-        
         copleyController = TangoDSObject(axis_name)
         self.DefinePosition(axis, position)
-        
         copleyController.moveMotor(axis)   
-        #print "StartOne() finished"
+        #print("StartOne() finished")
     def GetAxisPar(self, axis, name):
         axis_name = self.AXIS_NAMES[axis]
-      
         copleyController = TangoDSObject(axis_name)
         name = name.lower()
         if name == "acceleration":
-            ans = copleyController.getAcceleration()           
-                    
+            ans = copleyController.getAcceleration()
         elif name == "deceleration":
-            ans = copleyController.getDeceleration()               
-                 
+            ans = copleyController.getDeceleration()
         elif name == "velocity":
-            ans = copleyController.getVelocity()             
-                         
+            ans = copleyController.getVelocity()
         elif name == "step_per_unit":
             ans = copleyController.getStepPerUnit()
         return ans
     
     def SetAxisPar(self, axis, name, value):
+        """
+        Set Axis Parameters
+        :param axis:
+        :param name:
+        :param value:
+        :return:
+        """
         axis_name = self.AXIS_NAMES[axis]
-       
         copleyController = TangoDSObject(axis_name)
         name = name.lower()
         if name == "acceleration":
@@ -253,6 +242,5 @@ class CopleyController(MotorController):
         """
         Abort the axis(motor).
         """
-       
         copleyController = TangoDSObject(axis_name)
         copleyController.abortMotor(axis)
