@@ -106,14 +106,15 @@ class PySerial(PyTango.Device_4Impl):
 #	Device destructor
 #------------------------------------------------------------------
 	def delete_device(self):
-		print "[Device delete_device method] for device",self.get_name()
+		print("[Device delete_device method] for device",self.get_name())
+        
 
 
 #------------------------------------------------------------------
 #	Device initialization
 #------------------------------------------------------------------
 	def init_device(self):
-		print "In ", self.get_name(), "::init_device()"
+		print("In ", self.get_name(), "::init_device()")
 		self.set_state(PyTango.DevState.OFF)
 		self.get_device_properties(self.get_device_class())
 
@@ -121,7 +122,7 @@ class PySerial(PyTango.Device_4Impl):
 #	Always excuted hook method
 #------------------------------------------------------------------
 	def always_executed_hook(self):
-		print "In ", self.get_name(), "::always_excuted_hook()"
+		print("In ", self.get_name(), "::always_excuted_hook()")
 
 
 #---- Aux Methods ----
@@ -148,7 +149,7 @@ class PySerial(PyTango.Device_4Impl):
 #	Read Attribute Hardware
 #------------------------------------------------------------------
 	def read_attr_hardware(self,data):
-		print "In ", self.get_name(), "::read_attr_hardware()"
+		print("In ", self.get_name(), "::read_attr_hardware()")
 
 
 
@@ -156,7 +157,7 @@ class PySerial(PyTango.Device_4Impl):
 #	Read Port attribute
 #------------------------------------------------------------------
 	def read_Port(self, attr):
-		print "In ", self.get_name(), "::read_Port()"
+		#print "In ", self.get_name(), "::read_Port()"
 		
 		#	Add your own code here
 		attr_Port_read = self.serial.port
@@ -167,10 +168,10 @@ class PySerial(PyTango.Device_4Impl):
 #	Write Port attribute
 #------------------------------------------------------------------
 	def write_Port(self, attr):
-		print "In ", self.get_name(), "::write_Port()"
+		#print "In ", self.get_name(), "::write_Port()"
 		data=[]
 		attr.get_write_value(data)
-		print "Attribute value = ", data
+		#print "Attribute value = ", data
         
 		#	Add your own code here
 		self.port = data[0]
@@ -188,7 +189,7 @@ class PySerial(PyTango.Device_4Impl):
 #	Read Baudrate attribute
 #------------------------------------------------------------------
 	def read_Baudrate(self, attr):
-		print "In ", self.get_name(), "::read_Baudrate()"
+		#print "In ", self.get_name(), "::read_Baudrate()"
 		
 		#	Add your own code here
 		
@@ -200,10 +201,10 @@ class PySerial(PyTango.Device_4Impl):
 #	Write Baudrate attribute
 #------------------------------------------------------------------
 	def write_Baudrate(self, attr):
-		print "In ", self.get_name(), "::write_Baudrate()"
+		#print "In ", self.get_name(), "::write_Baudrate()"
 		data=[]
 		attr.get_write_value(data)
-		print "Attribute value = ", data
+		#print "Attribute value = ", data
 		#	Add your own code here
 		self.baudrate = data[0]
 		self.configure = True
@@ -219,7 +220,7 @@ class PySerial(PyTango.Device_4Impl):
 #	Read DataBits attribute
 #------------------------------------------------------------------
 	def read_DataBits(self, attr):
-		print "In ", self.get_name(), "::read_DataBits()"
+		#print "In ", self.get_name(), "::read_DataBits()"
 		
 		#	Add your own code here
 		
@@ -231,10 +232,10 @@ class PySerial(PyTango.Device_4Impl):
 #	Write DataBits attribute
 #------------------------------------------------------------------
 	def write_DataBits(self, attr):
-		print "In ", self.get_name(), "::write_DataBits()"
+		#print "In ", self.get_name(), "::write_DataBits()"
 		data=[]
 		attr.get_write_value(data)
-		print "Attribute value = ", data
+		#print "Attribute value = ", data
 
 		#	Add your own code here
 		self.bytesize = data[0]
@@ -251,7 +252,7 @@ class PySerial(PyTango.Device_4Impl):
 #	Read StopBits attribute
 #------------------------------------------------------------------
 	def read_StopBits(self, attr):
-		print "In ", self.get_name(), "::read_StopBits()"
+		#print "In ", self.get_name(), "::read_StopBits()"
 		
 		#	Add your own code here
 		
@@ -263,10 +264,10 @@ class PySerial(PyTango.Device_4Impl):
 #	Write StopBits attribute
 #------------------------------------------------------------------
 	def write_StopBits(self, attr):
-		print "In ", self.get_name(), "::write_StopBits()"
+		#print "In ", self.get_name(), "::write_StopBits()"
 		data=[]
 		attr.get_write_value(data)
-		print "Attribute value = ", data
+		#print "Attribute value = ", data
 
 		#	Add your own code here
 		self.stopbits = data[0]
@@ -283,7 +284,7 @@ class PySerial(PyTango.Device_4Impl):
 #	Read Terminator attribute
 #------------------------------------------------------------------
 	def read_Terminator(self, attr):
-		print "In ", self.get_name(), "::read_Terminator()"
+		#print "In ", self.get_name(), "::read_Terminator()"
 		
 		#	Add your own code here
 		
@@ -295,10 +296,10 @@ class PySerial(PyTango.Device_4Impl):
 #	Write Terminator attribute
 #------------------------------------------------------------------
 	def write_Terminator(self, attr):
-		print "In ", self.get_name(), "::write_Terminator()"
+		#print "In ", self.get_name(), "::write_Terminator()"
 		data=[]
 		attr.get_write_value(data)
-		print "Attribute value = ", data
+		#print "Attribute value = ", data
 		
 		#	Add your own code here
 		
@@ -321,7 +322,7 @@ class PySerial(PyTango.Device_4Impl):
 #	Read FlowControl attribute
 #------------------------------------------------------------------
 	def read_FlowControl(self, attr):
-		print "In ", self.get_name(), "::read_FlowControl()"
+		#print "In ", self.get_name(), "::read_FlowControl()"
 		
 		#	Add your own code here
 		
@@ -333,10 +334,10 @@ class PySerial(PyTango.Device_4Impl):
 #	Write FlowControl attribute
 #------------------------------------------------------------------
 	def write_FlowControl(self, attr):
-		print "In ", self.get_name(), "::write_FlowControl()"
+		#print "In ", self.get_name(), "::write_FlowControl()"
 		data=[]
 		attr.get_write_value(data)
-		print "Attribute value = ", data
+		#print "Attribute value = ", data
 
 		#	Add your own code here
 		data[0] = data[0].lower()
@@ -359,7 +360,7 @@ class PySerial(PyTango.Device_4Impl):
 #	Read Timeout attribute
 #------------------------------------------------------------------
 	def read_Timeout(self, attr):
-		print "In ", self.get_name(), "::read_Timeout()"
+		#print "In ", self.get_name(), "::read_Timeout()"
 		
 		#	Add your own code here
 		
@@ -371,10 +372,10 @@ class PySerial(PyTango.Device_4Impl):
 #	Write Timeout attribute
 #------------------------------------------------------------------
 	def write_Timeout(self, attr):
-		print "In ", self.get_name(), "::write_Timeout()"
+		#print "In ", self.get_name(), "::write_Timeout()"
 		data=[]
 		attr.get_write_value(data)
-		print "Attribute value = ", data
+		#print "Attribute value = ", data
 
 		#	Add your own code here
 		if data[0] == 0:
@@ -394,7 +395,7 @@ class PySerial(PyTango.Device_4Impl):
 #	Read Parity attribute
 #------------------------------------------------------------------
 	def read_Parity(self, attr):
-		print "In ", self.get_name(), "::read_Parity()"
+		#print "In ", self.get_name(), "::read_Parity()"
 		
 		#	Add your own code here
 
@@ -406,10 +407,10 @@ class PySerial(PyTango.Device_4Impl):
 #	Write Parity attribute
 #------------------------------------------------------------------
 	def write_Parity(self, attr):
-		print "In ", self.get_name(), "::write_Parity()"
+		#print "In ", self.get_name(), "::write_Parity()"
 		data=[]
 		attr.get_write_value(data)
-		print "Attribute value = ", data
+		#print "Attribute value = ", data
 
 		#	Add your own code here
 		data[0] = data[0].lower()
@@ -434,7 +435,7 @@ class PySerial(PyTango.Device_4Impl):
 #	Read InputBuffer attribute
 #------------------------------------------------------------------
 	def read_InputBuffer(self, attr):
-		print "In ", self.get_name(), "::read_InputBuffer()"
+		#print "In ", self.get_name(), "::read_InputBuffer()"
 		
 		#	Add your own code here
 		try:
@@ -468,7 +469,7 @@ class PySerial(PyTango.Device_4Impl):
 #                
 #------------------------------------------------------------------
 	def Open(self):
-		print "In ", self.get_name(), "::Open()"
+		#print "In ", self.get_name(), "::Open()"
 		#	Add your own code here
 		#self.port = '/dev/ttyS0'
 		# configure port
@@ -524,7 +525,7 @@ class PySerial(PyTango.Device_4Impl):
 #                
 #------------------------------------------------------------------
 	def Close(self):
-		print "In ", self.get_name(), "::Close()"
+		#print "In ", self.get_name(), "::Close()"
 		#	Add your own code here
 		try:
 			self.serial.close()
@@ -548,7 +549,7 @@ class PySerial(PyTango.Device_4Impl):
 #	Description: 
 #------------------------------------------------------------------
 	def FlushInput(self):
-		print "In ", self.get_name(), "::FlushInput()"
+		#print "In ", self.get_name(), "::FlushInput()"
 		#	Add your own code here
 		try:
 			self.serial.flushInput()
@@ -572,7 +573,7 @@ class PySerial(PyTango.Device_4Impl):
 #	Description: 
 #------------------------------------------------------------------
 	def FlushOutput(self):
-		print "In ", self.get_name(), "::FlushOutput()"
+		#print "In ", self.get_name(), "::FlushOutput()"
 		#	Add your own code here
 		try:
 			self.serial.flushOutput()
@@ -598,16 +599,20 @@ class PySerial(PyTango.Device_4Impl):
 #	argin:  DevString	
 #------------------------------------------------------------------
 	def Write(self, argin):
-		print "In ", self.get_name(), "::Write()"
+		#print "In ", self.get_name(), "::Write()"
 		#	Add your own code here
-		#print "char array ", argin
+		
+		print("char array ", argin)
+		print("datatype", type(argin))
 		#s = array.array('B', argin).tostring()
-		#value = s + self.terminatorchar
-		#print "string " ,value
+		b = argin.encode("ascii")
+		print("b: ",b)
+		print("datatype", type(b))
 		#self.serial.write(value)
+		self.serial.write(b)
 
-		print "string " , argin
-		self.serial.write(argin+ '\n')
+		#print "string " , argin
+		#self.serial.write(argin+ '\n')
 
 #---- Write command State Machine -----------------
 	def is_Write_allowed(self):
@@ -629,11 +634,11 @@ class PySerial(PyTango.Device_4Impl):
 #	argout: DevString	Characters readed
 #----------------------------------------------------------------
 	def Read(self, argin):
-		print "In ", self.get_name(), "::Read()"
+		#print "In ", self.get_name(), "::Read()"
 		#	Add your own code here
 		argout =  []
 		s = self.serial.read(argin)
-		print s
+		#print s
 		#b = array.array('B', s)
 		#argout = b.tolist()
 		return s
@@ -658,7 +663,7 @@ class PySerial(PyTango.Device_4Impl):
 #	argout: DevVarCharArray Characters readed
 #------------------------------------------------------------------
 	def ReadLine(self):
-		print "In ", self.get_name(), "::ReadLine()"
+		#print "In ", self.get_name(), "::ReadLine()"
 #	Add your own code here
 		### this is old code, in which eol is not supported any more. Use unicodedata instead.
 		#argout =  []
@@ -817,7 +822,7 @@ class PySerialClass(PyTango.DeviceClass):
 	def __init__(self, name):
 		PyTango.DeviceClass.__init__(self, name)
 		self.set_type(name);
-		print "In PySerialClass  constructor"
+		#print "In PySerialClass  constructor"
 
 #==================================================================
 #
@@ -839,9 +844,9 @@ def main():
         U.server_run()
 
     except PyTango.DevFailed as e:
-        print ('-------> Received a DevFailed exception:', e)
+        print('-------> Received a DevFailed exception:', e)
     except Exception as e:
-        print ('-------> An unforeseen exception occured....', e)
+        print('-------> An unforeseen exception occured....', e)
 
 if __name__ == '__main__':
     main()
